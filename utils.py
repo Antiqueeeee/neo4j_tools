@@ -13,7 +13,7 @@ def text_input_properties_to_dict(properties=""):
     for prop in properties:
         if len(prop):
             _prop = prop.split("：")
-            key,value = _prop[0],_prop[1:]
+            key,value = _prop[0],"：".join(_prop[1:])
             _property[key] = value
     return _property
 
