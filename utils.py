@@ -6,7 +6,7 @@ def open_connection():
 
 from py2neo import Node,Relationship,NodeMatcher,RelationshipMatcher
 graph = open_connection()
-def text_input_properties_to_dict(properties):
+def text_input_properties_to_dict(properties=""):
     _property = dict()
     properties = properties.replace(":","：")
     properties = properties.split("\n")
@@ -23,12 +23,7 @@ def button_function_search_entity(entity_type,entity_properties):
     node_matcher = NodeMatcher(graph)
     _property = text_input_properties_to_dict(entity_properties)
     nodes = node_matcher.match(entity_type).where(**_property)
-    if not nodes:
-        return None
-    else:
-        return nodes.first()
-    
-        
+    return nodes
 
 #
 # 添加
@@ -47,8 +42,8 @@ def button_function_create_relation(
         ,relation,relation_properties
 ):
     relation_matcher = RelationshipMatcher(graph)
-    head_entity = button_function_create_entity(head_entity_type,head_entity_properties)
-    tail_entity = button_function_create_entity(tail_entity_type,tail_entity_properties)
+    head_entity = button_function_create_entity(head_entity_type,head_entity_properties).first()
+    tail_entity = button_function_create_entity(tail_entity_type,tail_entity_properties).first()
     _property = text_input_properties_to_dict(relation_properties)
     if not relation_matcher.match((head_entity,tail_entity), r_type=relation,**_property) and not relation_matcher.match((tail_entity,head_entity), r_type=relation):
         relationship = Relationship(head_entity, relation, tail_entity,**_property)
@@ -59,12 +54,17 @@ def button_function_create_relation(
 #
 def button_function_delete_entity(entity_type,entity_properites):
     relation_matcher = RelationshipMatcher(graph)
-    nodes = button_function_create_entity(entity_type,entity_properites)
+    nodes = button_function_search_entity(entity_type,entity_properites)
+    print("!!!"*30,"\ngotten Nodes:\n",type(nodes),nodes)
     for node in nodes:
         # 接触与该节点相关的所有关系
         # 然后删除该节点
+        print()
         relationships = relation_matcher.match([node],r_type=None)
+
+        print(f"\n\nrelationships:\n{type(relationships)},{relationships}\n\n")
         for relationship in relationships:
+            print(f"\n\relationship:\n{type(relationship)},{relationship}\n\n")
             graph.separate(relationship)
         graph.delete(node)
 def button_function_delete_relation(
@@ -74,8 +74,8 @@ def button_function_delete_relation(
 ):
     relation_matcher = RelationshipMatcher(graph)
 
-    head_entity = button_function_create_entity(head_entity_type,head_entity_properties)
-    tail_entity = button_function_create_entity(tail_entity_type,tail_entity_properites)
+    head_entity = button_function_search_entity(head_entity_type,head_entity_properties).first()
+    tail_entity = button_function_search_entity(tail_entity_type,tail_entity_properites).first()
     _property = text_input_properties_to_dict(relation_properties)
     relationships = relation_matcher.match((head_entity,tail_entity),r_type=relation,**_property)
     for relationship in relationships:
@@ -89,8 +89,8 @@ def button_function_delete_spo(
         ,text_input_relation=None,text_input_relation_properties=""
 ):
     relation_matcher = RelationshipMatcher(graph)
-    head_entity = button_function_create_entity(head_entity_type,head_entity_properites)
-    tail_entity = button_function_create_entity(tail_entity_type,tail_entity_properites)
+    head_entity = button_function_search_entity(head_entity_type,head_entity_properites).first()
+    tail_entity = button_function_search_entity(tail_entity_type,tail_entity_properites).first()
     # 考虑两个方向
     _property = text_input_properties_to_dict(text_input_relation_properties)
     relationships = relation_matcher.match((head_entity,tail_entity),r_type=text_input_relation,**_property)
@@ -101,8 +101,28 @@ def button_function_delete_spo(
         graph.delete(relationship)
 
 # 修改
-def button_function_update_entity(
+def button_function_update_entity_properties(
                 entity_type,entity_properties
-                ,new_type,new_properties
+                ,new_properties
 ):
-    pass
+    nodes = button_function_search_entity(entity_type,entity_properties)
+    _property = text_input_properties_to_dict(new_properties)
+    for node in nodes:
+        for key,value in _property.items():
+            node[key] = value
+        graph.push(node)
+
+def button_function_update_relation_properties(
+        relation,relation_properties
+        ,new_relation_prooerties
+):
+    _property = text_input_properties_to_dict(relation_properties)
+    relation_matcher = RelationshipMatcher(graph)
+    relations = relation_matcher.match(r_type=relation,**_property)
+    _property = text_input_properties_to_dict(new_relation_prooerties)
+    for relation in relations:
+        for key,value in _property.items():
+            relation[key] = value
+        graph.push(relation)
+
+    
