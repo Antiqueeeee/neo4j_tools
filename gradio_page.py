@@ -73,15 +73,16 @@ with gradio.Blocks() as demo:
                 ,outputs=None
             )
         gradio.Markdown("操作三元组")
-        with gradio.Column():
-            text_input_entity_1_type = gradio.Text(label="实体1类型")
-            text_input_entity_1_properties = gradio.TextArea(label="实体1属性",value="name：")
-        with gradio.Column():
-            text_input_entity_2_name = gradio.Text(label="实体2类型")
-            text_input_entity_2_type = gradio.TextArea(label="实体2属性",value="name：")
-        with gradio.Column():
-            text_input_relation = gradio.Text(label="关系")
-            text_input_relation_properties = gradio.TextArea(label="关系属性")
+        with gradio.Row():
+            with gradio.Column():
+                text_input_entity_1_type = gradio.Text(label="实体1类型")
+                text_input_entity_1_properties = gradio.TextArea(label="实体1属性",value="name：")
+            with gradio.Column():
+                text_input_entity_2_name = gradio.Text(label="实体2类型")
+                text_input_entity_2_type = gradio.TextArea(label="实体2属性",value="name：")
+            with gradio.Column():
+                text_input_relation = gradio.Text(label="关系")
+                text_input_relation_properties = gradio.TextArea(label="关系属性")
         button_apply = gradio.Button("删除")
         button_apply.click(
             button_function_delete_spo

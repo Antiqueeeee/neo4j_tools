@@ -23,17 +23,19 @@ def button_function_search_entity(entity_type,entity_properties):
     node_matcher = NodeMatcher(graph)
     _property = text_input_properties_to_dict(entity_properties)
     nodes = node_matcher.match(entity_type).where(**_property)
-    if len(nodes):
-        return nodes.first()
-    else:
+    if not nodes:
         return None
+    else:
+        return nodes.first()
+    
+        
 
 #
 # 添加
 #
 def button_function_create_entity(new_entity_type,new_entity_properties):
     nodes = button_function_search_entity(new_entity_type,new_entity_properties)
-    if not len(nodes):
+    if not nodes:
         _property = text_input_properties_to_dict(new_entity_properties)
         node = Node(new_entity_type,**_property)
         graph.create(node)
@@ -49,7 +51,7 @@ def button_function_create_relation(
     tail_entity = button_function_create_entity(tail_entity_type,tail_entity_properties)
     _property = text_input_properties_to_dict(relation_properties)
     if not relation_matcher.match((head_entity,tail_entity), r_type=relation,**_property) and not relation_matcher.match((tail_entity,head_entity), r_type=relation):
-        relationship = Relationship(head_entity, relation, tail_entity)
+        relationship = Relationship(head_entity, relation, tail_entity,**_property)
         graph.create(relationship)
     return list(relation_matcher.match((head_entity,tail_entity), r_type=relation)) + list(relation_matcher.match((tail_entity,head_entity), r_type=relation))
 # 
